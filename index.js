@@ -6,22 +6,29 @@ const app = express();
 
 const port = 5050;
 
+const corsOptions = {
+    origin: 'http://localhost:3000',
+    optionsSuccessStatus: 200
+  };
+  
+  app.use(cors(corsOptions));
+
 app.use(express.json());
 app.use(express.static("public"));
-app.use(cors());
+
 
 function loadVideoData() {
-  const videos = JSON.parse(fs.readFileSync("./data/videos.json", "utf8"));
+  const videos = JSON.parse(fs.readFileSync("./data/video-details.json", "utf8"));
   return videos;
 }
 
 function saveVideoData(videos) {
-  fs.writeFileSync("./data/videos.json", JSON.stringify(videos, null, 2), 'utf8');
+  fs.writeFileSync("./data/video-details.json", JSON.stringify(videos), 'utf8');
 }
 
 app.get("/", (req, res) => {
   res.json({
-    message: "Video API running",
+    message: "Video API running!",
   });
 });
 
@@ -31,7 +38,13 @@ app.get("/videos", (req, res) => {
   const minimalVideoInfo = videos.map(video => ({
     id: video.id,
     title: video.title,
-    image: video.image
+    channel: video.channel,
+    image: video.image,
+    description: video.description,
+    views: video.views,
+    likes: video.likes,
+    timestamp: video.timestamp,
+    comments: video.comments
   }));
   res.json(minimalVideoInfo);
 });
@@ -52,8 +65,15 @@ app.post("/videos", (req, res) => {
   const newVideo = {
     id: uuidv4(),
     title: req.body.title,
-    channel: req.body.channel || "Default Channel",
-    image: req.body.image || "http://localhost:5050/images/[default-image].jpg"
+    channel: "Guest",
+    image: "http://localhost:5050/images/image0.jpg",
+    description: req.body.description,
+    views: "0",
+    likes: "0",
+    duration: "2:30",
+    video: "http://localhost:5050/images/image0.jpg",
+    timestamp: Date.now(),
+    comments: []
   };
 
   videos.push(newVideo);
@@ -65,3 +85,4 @@ app.post("/videos", (req, res) => {
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
+
